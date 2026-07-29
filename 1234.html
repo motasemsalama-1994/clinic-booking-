@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dr. Almotasembelah Clinic</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #000000;
+      color: #d4af37;
+    }
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      color: #ffd700;
+    }
+    p.subtitle {
+      margin: 0;
+      color: #d4af37;
+    }
+    .card {
+      background: #111111;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(255, 215, 0, 0.12);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    label {
+      font-weight: 600;
+      color: #f0c95b;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #444444;
+      border-radius: 12px;
+      font-size: 1rem;
+      color: #f8de7e;
+      background: #121212;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #b8860b;
+      color: #ffffff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #99650c;
+    }
+    .note {
+      font-size: 0.95rem;
+      color: #d4af37;
+      margin-top: 12px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 18px;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+    a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Dr. Almotasembelah Clinic</h1>
+      <p class="subtitle">شارك هذا الرابط مع المرضى ليتمكنوا من طلب موعد في العيادة.</p>
+    </header>
+
+    <div class="card">
+      <div class="field">
+        <label for="patientName">اسم المريض</label>
+        <input id="patientName" name="patientName" type="text" placeholder="الاسم الكامل" required>
+      </div>
+      <div class="field">
+        <label for="patientEmail">البريد الإلكتروني</label>
+        <input id="patientEmail" name="patientEmail" type="email" placeholder="patient@example.com" required>
+      </div>
+      <div class="field">
+        <label for="patientPhone">رقم الهاتف</label>
+        <input id="patientPhone" name="patientPhone" type="tel" placeholder="(123) 456-7890" required>
+      </div>
+      <div class="field">
+        <label for="serviceType">نوع الخدمة / الموعد</label>
+        <select id="serviceType" name="serviceType" required>
+          <option value="">اختر الخدمة</option>
+          <option>1-مراجعة</option>
+          <option>2- طوارئ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="preferredDate">التاريخ المفضل</label>
+        <input id="preferredDate" name="preferredDate" type="date" required>
+      </div>
+      <div class="field">
+        <label for="preferredTime">الوقت المفضل (10:00–16:00)</label>
+        <input id="preferredTime" name="preferredTime" type="time" min="10:00" max="16:00">
+      </div>
+      <div class="field">
+        <label for="notes">ملاحظات أو أعراض</label>
+        <textarea id="notes" name="notes" placeholder="صف سبب زيارتك باختصار"></textarea>
+      </div>
+      <button id="submitButton" type="button">إرسال طلب الحجز</button>
+      <p class="note">سيفتح هذا النموذج تطبيق البريد الإلكتروني لطلب الحجز. إذا لم يعمل ذلك، انسخ التفاصيل وأرسلها إلى <a href="mailto:yourclinic@example.com">yourclinic@example.com</a>.</p>
+    </div>
+
+    <div class="footer">
+      <p>هاتف العيادة: <a href="tel:0597051341">0597051341</a></p>
+    </div>
+  </div>
+
+  <script>
+    const button = document.getElementById('submitButton');
+    const dateInput = document.getElementById('preferredDate');
+    const timeSelect = document.getElementById('preferredTime');
+    const clinicTimes = [
+      '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+      '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'
+    ];
+
+    function getBookedAppointments() {
+      return JSON.parse(localStorage.getItem('bookedAppointments') || '{}');
+    }
+
+    function saveBookedAppointments(data) {
+      localStorage.setItem('bookedAppointments', JSON.stringify(data));
+    }
+
+    function refreshTimeOptions() {
+      const date = dateInput.value;
+      timeSelect.innerHTML = '';
+      if (!date) {
+        timeSelect.innerHTML = '<option value="">Select a date first</option>';
+        return;
+      }
+
+      const booked = getBookedAppointments()[date] || [];
+      const availableTimes = clinicTimes.filter(time => !booked.includes(time));
+      if (availableTimes.length === 0) {
+        timeSelect.innerHTML = '<option value="">No available times for this date</option>';
+        return;
+      }
+
+      timeSelect.innerHTML = '<option value="">Select a time</option>';
+      availableTimes.forEach(time => {
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        timeSelect.appendChild(option);
+      });
+    }
+
+    dateInput.addEventListener('change', refreshTimeOptions);
+    window.addEventListener('load', refreshTimeOptions);
+
+    button.addEventListener('click', () => {
+      const name = document.getElementById('patientName').value.trim();
+      const email = document.getElementById('patientEmail').value.trim();
+      const phone = document.getElementById('patientPhone').value.trim();
+      const service = document.getElementById('serviceType').value;
+      const date = dateInput.value;
+      const time = timeSelect.value;
+      const notes = document.getElementById('notes').value.trim();
+      if (!name || !email || !phone || !service || !date || !time) {
+        alert('Please complete all required fields and choose an available time.');
+        return;
+      }
+
+      const appointments = getBookedAppointments();
+      appointments[date] = appointments[date] || [];
+      if (appointments[date].includes(time)) {
+        alert('That time is already booked. Please choose another time.');
+        refreshTimeOptions();
+        return;
+      }
+
+      appointments[date].push(time);
+      saveBookedAppointments(appointments);
+      refreshTimeOptions();
+
+      const subject = encodeURIComponent('Appointment request from ' + name);
+      const body = encodeURIComponent(
+        'Patient name: ' + name + '\n' +
+        'Email: ' + email + '\n' +
+        'Phone: ' + phone + '\n' +
+        'Service: ' + service + '\n' +
+        'Preferred date: ' + date + '\n' +
+        'Preferred time: ' + time + '\n' +
+        'Notes:\n' + (notes || 'None') + '\n\n' +
+        'Please confirm the appointment time and date.'
+      );
+      window.location.href = 'mailto:yourclinic@example.com?subject=' + subject + '&body=' + body;
+    });
+  </script>
+</body>
+</html>
